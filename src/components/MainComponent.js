@@ -1,7 +1,8 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
-import { BleManager } from 'react-native-ble-plx';
-import { Buffer } from 'buffer';
+import React, {Component} from 'react';
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {Picker} from '@react-native-community/picker';
+import {BleManager} from 'react-native-ble-plx';
+import {Buffer} from 'buffer';
 import PowerButton from './PowerButtonComponent';
 
 export default class Main extends Component {
@@ -18,14 +19,22 @@ export default class Main extends Component {
     }
 
     componentDidMount() {
-        this.addModule('123', 4);
-        this.switchModule('123');
+        // this.addModule('123', 4);
+        // this.switchModule('123');
         const subscription = this.manager.onStateChange((state) => {
             if (state === 'PoweredOn') {
-                this.scanAndConnect();
+                // this.scanAndConnect();
                 subscription.remove();
             }
         }, true);
+    }
+
+    componentWillUnmount() {
+        // TODO Turn off relays
+        // TODO Disconnect all gets an error when called
+        // this.manager.devices().forEach((device) => {
+        //     device.cancelConnection();
+        // });
     }
 
     addModule(deviceId, numRelays) {
@@ -45,26 +54,28 @@ export default class Main extends Component {
 
     switchModule(deviceId) {
         if (this.state.modules.has(deviceId)) {
-            this.setState({ currentModule: deviceId });
+            this.setState({currentModule: deviceId});
         }
     }
 
-    updateRelays(relays) {
+    updateRelays(relays, module) {
         let modules = this.state.modules;
-        modules = modules.set(this.state.currentModule, relays);
+        modules = modules.set(module, relays);
         this.setState({modules: modules});
     }
 
     startTimer(relayNum) {
-        let relays = [...this.state.modules.get(this.state.currentModule)];
+        let moduleSelected = this.state.currentModule;
+        this.relayOn(relayNum, moduleSelected);
+        let relays = [...this.state.modules.get(moduleSelected)];
         let relay = relays[relayNum - 1];
         let onInterval = true;
         let intervalId = setInterval(() => {
             if (onInterval) {
-                this.relayOff(relayNum);
+                this.relayOff(relayNum, moduleSelected);
                 onInterval = false;
             } else {
-                this.relayOn(relayNum);
+                this.relayOn(relayNum, moduleSelected);
                 onInterval = true;
             }
         }, relay.timeInterval * 1000);
@@ -77,39 +88,43 @@ export default class Main extends Component {
     }
 
     stopTimer(relayNum) {
+        let moduleSelected = this.state.currentModule;
         let relays = [...this.state.modules.get(this.state.currentModule)];
         let relay = relays[relayNum - 1];
         clearInterval(relay.timeoutId);
         relays[relayNum - 1] = {
             ...relay[relayNum - 1],
             timeoutId: '',
-            timeInterval: 3,
+            timeInterval: relay.timeInterval,
             timerIsOn: false,
         };
         this.updateRelays(relays);
-        this.relayOff(relayNum);
+        this.relayOff(relayNum, this.state.currentModule);
     }
 
     setRelayInterval(relayNum, interval) {
         let relays = [...this.state.modules.get(this.state.currentModule)];
-        relays[relayNum - 1] = { ...relays[relayNum - 1], timeInterval: interval };
+        relays[relayNum - 1] = {
+            ...relays[relayNum - 1],
+            timeInterval: interval,
+        };
         this.updateRelays(relays);
     }
 
-    relayOn(relayNum) {
+    relayOn(relayNum, module) {
         let code = 'A00' + relayNum + '01A' + (relayNum + 1);
-        let relays = [...this.state.modules.get(this.state.currentModule)];
-        relays[relayNum - 1] = { ...relays[relayNum - 1], isOn: true };
+        let relays = [...this.state.modules.get(module)];
+        relays[relayNum - 1] = {...relays[relayNum - 1], isOn: true};
         this.updateRelays(relays);
-        // this.writeHex(code);
+        this.writeHex(code);
     }
 
-    relayOff(relayNum) {
+    relayOff(relayNum, module) {
         let code = 'A00' + relayNum + '00A' + relayNum;
-        let relays = [...this.state.modules.get(this.state.currentModule)];
-        relays[relayNum - 1] = { ...relays[relayNum - 1], isOn: true };
+        let relays = [...this.state.modules.get(module)];
+        relays[relayNum - 1] = {...relays[relayNum - 1], isOn: true};
         this.updateRelays(relays);
-        // this.writeHex(code);
+        this.writeHex(code);
     }
 
     writeHex(hex) {
@@ -125,7 +140,9 @@ export default class Main extends Component {
     scanAndConnect() {
         this.manager.startDeviceScan(null, null, (error, device) => {
             if (!error) {
+                console.log('Scanning');
                 if (device.name === 'DSD Relay') {
+                    console.log('Found!');
                     this.manager.stopDeviceScan();
                     this.manager
                         .connectToDevice(device.id)
@@ -159,38 +176,71 @@ export default class Main extends Component {
                     .map((relay, index) => {
                         return (
                             <PowerButton
-                                key={this.state.currentModule + index.toString()}
+                                key={
+                                    this.state.currentModule + index.toString()
+                                }
                                 num={index + 1}
                                 timeInterval={relay.timeInterval}
                                 isOn={relay.timerIsOn}
                                 handleOn={this.startTimer}
                                 handleOff={this.stopTimer}
-                                setRelayInterval={this.setRelayInterval}>
-                            </PowerButton>
+                                setRelayInterval={
+                                    this.setRelayInterval
+                                }></PowerButton>
                         );
                     });
                 return btns;
             } else {
                 return <View />;
             }
-        }
+        };
+
+        let modulePicker = () => {
+            if (this.state.modules.size > 0) {
+                let mods = [...this.state.modules.keys()].map((id, index) => {
+                    return (
+                        <Picker.Item
+                            key={id}
+                            label={
+                                this.state.modules.get(id).length +
+                                '-relay module (' + (index + 1).toString + ')'
+                            }
+                            value={id}
+                        />
+                    );
+                });
+                return (
+                    <Picker
+                        selectedValue={this.state.currentModule}
+                        style={styles.modPicker}
+                        onValueChange={(itemValue, itemIndex) =>
+                            this.switchModule(itemValue)
+                        }>
+                        {mods}
+                    </Picker>
+                );
+            } else {
+                return <View />;
+            }
+        };
 
         return (
             <View style={styles.container}>
                 <Text style={styles.paragraph}>Duck Decoys</Text>
 
-                {/* <TouchableOpacity>Connect</TouchableOpacity>
-                <Picker
-                    selectedValue={this.state.language}
-                    style={{ height: 50, width: 100 }}
-                    onValueChange={(itemValue, itemIndex) =>
-                        this.setState({ language: itemValue })
-                    }>
-                    <Picker.Item label="Java" value="java" />
-                    <Picker.Item label="JavaScript" value="js" />
-                </Picker> */}
+                <TouchableOpacity
+                    style={styles.connect}
+                    onPress={() => this.scanAndConnect()}>
+                    <Text style={styles.connectText}>Connect</Text>
+                </TouchableOpacity>
 
-                <Image style={styles.image} source={require('../../assets/duck_pic.png')} />
+                {modulePicker()}
+
+                <Image
+                    style={styles.image}
+                    source={require('../../assets/duck_pic.png')}
+                />
+
                 {buttons()}
             </View>
         );
@@ -204,16 +254,34 @@ const styles = StyleSheet.create({
         backgroundColor: '#ecf0f1',
         padding: 8,
     },
+    connect: {
+        alignSelf: 'center',
+        alignItems: 'center',
+        backgroundColor: '#0080ff',
+        padding: 20,
+        margin: 15,
+    },
+    connectText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 18,
+    },
+    modPicker: {
+        alignSelf: "center",
+        height: 20, 
+        width: 150,
+        marginBottom: 10
+    },
     paragraph: {
-        margin: 24,
+        marginTop: 10,
         fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
     },
     image: {
-        alignSelf: "center",
-        width: 100,
-        height: 100,
+        alignSelf: 'center',
+        width: 50,
+        height: 50,
         resizeMode: 'center',
     },
 });
