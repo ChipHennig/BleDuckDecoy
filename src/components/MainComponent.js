@@ -60,22 +60,21 @@ export default class Main extends Component {
 
     updateRelays(relays, module) {
         let modules = this.state.modules;
-        modules = modules.set(module, relays);
+        modules.set(module, relays);
         this.setState({modules: modules});
     }
 
-    startTimer(relayNum) {
-        let moduleSelected = this.state.currentModule;
-        this.relayOn(relayNum, moduleSelected);
-        let relays = [...this.state.modules.get(moduleSelected)];
+    startTimer(relayNum, module) {
+        this.relayOn(relayNum, module);
+        let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
         let onInterval = true;
         let intervalId = setInterval(() => {
             if (onInterval) {
-                this.relayOff(relayNum, moduleSelected);
+                this.relayOff(relayNum, module);
                 onInterval = false;
             } else {
-                this.relayOn(relayNum, moduleSelected);
+                this.relayOn(relayNum, module);
                 onInterval = true;
             }
         }, relay.timeInterval * 1000);
@@ -84,12 +83,11 @@ export default class Main extends Component {
             timeoutId: intervalId,
             timerIsOn: true,
         };
-        this.updateRelays(relays);
+        this.updateRelays(relays, module);
     }
 
-    stopTimer(relayNum) {
-        let moduleSelected = this.state.currentModule;
-        let relays = [...this.state.modules.get(this.state.currentModule)];
+    stopTimer(relayNum, module) {
+        let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
         clearInterval(relay.timeoutId);
         relays[relayNum - 1] = {
@@ -98,8 +96,8 @@ export default class Main extends Component {
             timeInterval: relay.timeInterval,
             timerIsOn: false,
         };
-        this.updateRelays(relays);
-        this.relayOff(relayNum, this.state.currentModule);
+        this.updateRelays(relays, module);
+        this.relayOff(relayNum, module);
     }
 
     setRelayInterval(relayNum, interval) {
@@ -108,29 +106,29 @@ export default class Main extends Component {
             ...relays[relayNum - 1],
             timeInterval: interval,
         };
-        this.updateRelays(relays);
+        this.updateRelays(relays, this.state.currentModule);
     }
 
     relayOn(relayNum, module) {
         let code = 'A00' + relayNum + '01A' + (relayNum + 1);
         let relays = [...this.state.modules.get(module)];
         relays[relayNum - 1] = {...relays[relayNum - 1], isOn: true};
-        this.updateRelays(relays);
-        this.writeHex(code);
+        this.updateRelays(relays, module);
+        this.writeHex(code, module);
     }
 
     relayOff(relayNum, module) {
         let code = 'A00' + relayNum + '00A' + relayNum;
         let relays = [...this.state.modules.get(module)];
         relays[relayNum - 1] = {...relays[relayNum - 1], isOn: true};
-        this.updateRelays(relays);
-        this.writeHex(code);
+        this.updateRelays(relays, module);
+        this.writeHex(code, module);
     }
 
-    writeHex(hex) {
+    writeHex(hex, module) {
         let base64String = Buffer.from(hex, 'hex').toString('base64');
         return this.manager.writeCharacteristicWithoutResponseForDevice(
-            this.state.currentModule,
+            module,
             'FFE0',
             'FFE1',
             base64String,
@@ -141,7 +139,7 @@ export default class Main extends Component {
         this.manager.startDeviceScan(null, null, (error, device) => {
             if (!error) {
                 console.log('Scanning');
-                if (device.name === 'DSD Relay') {
+                if (device.name === 'DSD Relay' && !this.state.modules.has(device.id)) {
                     console.log('Found!');
                     this.manager.stopDeviceScan();
                     this.manager
@@ -179,6 +177,7 @@ export default class Main extends Component {
                                 key={
                                     this.state.currentModule + index.toString()
                                 }
+                                module={this.state.currentModule}
                                 num={index + 1}
                                 timeInterval={relay.timeInterval}
                                 isOn={relay.timerIsOn}
@@ -203,7 +202,7 @@ export default class Main extends Component {
                             key={id}
                             label={
                                 this.state.modules.get(id).length +
-                                '-relay module (' + (index + 1).toString + ')'
+                                '-relay module (' + (index + 1).toString() + ')'
                             }
                             value={id}
                         />
@@ -269,7 +268,7 @@ const styles = StyleSheet.create({
     modPicker: {
         alignSelf: "center",
         height: 20, 
-        width: 150,
+        width: 165,
         marginBottom: 10
     },
     paragraph: {

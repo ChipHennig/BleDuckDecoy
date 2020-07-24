@@ -17,7 +17,7 @@ export default class PowerButton extends Component {
                             onPress={() =>
                                 this.props.handleOn(
                                     this.props.num,
-                                    this.props.timeInterval,
+                                    this.props.module,
                                 )
                             }>
                             <Text style={styles.text}>On </Text>
@@ -48,7 +48,10 @@ export default class PowerButton extends Component {
                         <TouchableOpacity
                             style={styles.offButton}
                             onPress={() =>
-                                this.props.handleOff(this.props.num)
+                                this.props.handleOff(
+                                    this.props.num,
+                                    this.props.module,
+                                )
                             }>
                             <Text style={styles.text}>Off</Text>
                         </TouchableOpacity>
