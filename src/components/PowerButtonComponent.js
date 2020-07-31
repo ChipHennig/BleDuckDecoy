@@ -25,7 +25,7 @@ export default class PowerButton extends Component {
                         <View>
                             <Slider
                                 style={styles.rightItem}
-                                value={3}
+                                value={this.props.timeInterval}
                                 step={1}
                                 minimumValue={3}
                                 maximumValue={10}

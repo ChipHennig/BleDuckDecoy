@@ -52,6 +52,12 @@ export default class Main extends Component {
         this.setState({modules: modules});
     }
 
+    removeModule(deviceId) {
+        if (this.state.modules.has(deviceId)) {
+            // TODO
+        }
+    }
+
     switchModule(deviceId) {
         if (this.state.modules.has(deviceId)) {
             this.setState({currentModule: deviceId});
@@ -120,7 +126,7 @@ export default class Main extends Component {
     relayOff(relayNum, module) {
         let code = 'A00' + relayNum + '00A' + relayNum;
         let relays = [...this.state.modules.get(module)];
-        relays[relayNum - 1] = {...relays[relayNum - 1], isOn: true};
+        relays[relayNum - 1] = {...relays[relayNum - 1], isOn: false};
         this.updateRelays(relays, module);
         this.writeHex(code, module);
     }
@@ -138,9 +144,10 @@ export default class Main extends Component {
     scanAndConnect() {
         this.manager.startDeviceScan(null, null, (error, device) => {
             if (!error) {
-                console.log('Scanning');
-                if (device.name === 'DSD Relay' && !this.state.modules.has(device.id)) {
-                    console.log('Found!');
+                if (
+                    device.name === 'DSD Relay' &&
+                    !this.state.modules.has(device.id)
+                ) {
                     this.manager.stopDeviceScan();
                     this.manager
                         .connectToDevice(device.id)
@@ -202,10 +209,24 @@ export default class Main extends Component {
                             key={id}
                             label={
                                 this.state.modules.get(id).length +
-                                '-relay module (' + (index + 1).toString() + ')'
+                                '-relay module (' +
+                                (index + 1).toString() +
+                                ')'
                             }
                             value={id}
                         />
+                        // X button for removeModule?
+                        // <TouchableOpacity
+                        //     // style={styles.connect}
+                        //     // onPress={() => this.scanAndConnect()}
+                        //     >
+                        //         <Image
+                        //             source={require('../../assets/x_symbol.png')}
+                        //         />
+                        //         <Text style={styles.paragraph}>
+                        //             Duck Decoys
+                        //         </Text>
+                        // </TouchableOpacity>
                     );
                 });
                 return (
@@ -266,10 +287,10 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
     modPicker: {
-        alignSelf: "center",
-        height: 20, 
+        alignSelf: 'center',
+        height: 20,
         width: 165,
-        marginBottom: 10
+        marginBottom: 10,
     },
     paragraph: {
         marginTop: 10,
