@@ -8,6 +8,8 @@ import {
     Platform,
 } from 'react-native';
 import {Picker} from '@react-native-community/picker';
+import Modal from 'react-native-modal';
+import {SegmentedControls} from 'react-native-radio-buttons';
 import {BleManager} from 'react-native-ble-plx';
 import {Buffer} from 'buffer';
 import BackgroundTimer from 'react-native-background-timer';
@@ -27,6 +29,8 @@ export default class Main extends Component {
     }
 
     componentDidMount() {
+        this.addModule('123', 4);
+        this.switchModule('123');
         /**
          * For iOS startup
          */
@@ -268,6 +272,26 @@ export default class Main extends Component {
 
         return (
             <View style={styles.container}>
+                <Modal isVisible={true}>
+                    <View style={styles.modalCard}>
+                        <Text style={styles.paragraph}>Number of ducks?</Text>
+                        <View style={styles.modPicker}>
+                            <SegmentedControls
+                                style={{alignSelf: 'center'}}
+                                options={['1', '4']}
+                                // onSelection={}
+                                selectedOption={'1'}
+                            />
+                        </View>
+                        <TouchableOpacity
+                            style={styles.okBtn}
+                            // onPress={}
+                        >
+                            <Text style={styles.okText}>OK</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Modal>
+
                 <Text style={styles.paragraph}>Duck Decoys</Text>
 
                 <TouchableOpacity
@@ -295,6 +319,23 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         backgroundColor: '#ecf0f1',
         padding: 8,
+    },
+    modalCard: {
+        height: 200,
+        width: 300,
+        alignSelf: 'center',
+        alignContent: 'center',
+        justifyContent: 'space-evenly',
+        backgroundColor: '#ecf0f1',
+    },
+    okBtn: {
+        alignSelf: 'center',
+        alignItems: 'center',
+    },
+    okText: {
+        color: 'blue',
+        fontWeight: 'bold',
+        fontSize: 18,
     },
     connect: {
         alignSelf: 'center',

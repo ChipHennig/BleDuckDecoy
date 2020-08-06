@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {Text, View, TouchableOpacity, StyleSheet} from 'react-native';
+import {SegmentedControls} from 'react-native-radio-buttons';
 import Slider from '@react-native-community/slider';
 
 export default class PowerButton extends Component {
