@@ -1,5 +1,12 @@
 import React, {Component} from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    Image,
+    TouchableOpacity,
+    Platform,
+} from 'react-native';
 import {Picker} from '@react-native-community/picker';
 import {BleManager} from 'react-native-ble-plx';
 import {Buffer} from 'buffer';
@@ -13,6 +20,12 @@ export default class Main extends Component {
         this.state = {
             modules: new Map(),
             currentModule: '',
+            intervalStart: (callback, interval) => {
+                BackgroundTimer.setInterval(callback, interval);
+            },
+            intervalEnd: (callback, interval) => {
+                BackgroundTimer.clearInterval(callback, interval);
+            },
         };
         this.startTimer = this.startTimer.bind(this);
         this.stopTimer = this.stopTimer.bind(this);
@@ -23,11 +36,22 @@ export default class Main extends Component {
         /**
          * For iOS startup
          */
-        const subscription = this.manager.onStateChange((state) => {
-            if (state === 'PoweredOn') {
-                subscription.remove();
-            }
-        }, true);
+        if (Platform.OS === 'ios') {
+            const subscription = this.manager.onStateChange((state) => {
+                if (state === 'PoweredOn') {
+                    subscription.remove();
+                }
+            }, true);
+            BackgroundTimer.start();
+            this.setState({
+                intervalStart: (callback, interval) => {
+                    setInterval(callback, interval);
+                },
+                intervalEnd: (callback, interval) => {
+                    clearInterval(callback, interval);
+                },
+            });
+        }
     }
 
     componentWillUnmount() {
@@ -76,7 +100,7 @@ export default class Main extends Component {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
         let onInterval = true;
-        let intervalId = BackgroundTimer.setInterval(() => {
+        let intervalId = this.state.intervalStart(() => {
             if (onInterval) {
                 this.relayOff(relayNum, module);
                 onInterval = false;
@@ -96,7 +120,7 @@ export default class Main extends Component {
     stopTimer(relayNum, module) {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
-        BackgroundTimer.clearInterval(relay.timeoutId);
+        this.state.intervalEnd(relay.timeoutId);
         relays[relayNum - 1] = {
             ...relay[relayNum - 1],
             timeoutId: '',
