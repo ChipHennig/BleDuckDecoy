@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import {Picker} from '@react-native-community/picker';
 import {BleManager} from 'react-native-ble-plx';
 import {Buffer} from 'buffer';
+import BackgroundTimer from 'react-native-background-timer';
 import PowerButton from './PowerButtonComponent';
 
 export default class Main extends Component {
@@ -19,11 +20,11 @@ export default class Main extends Component {
     }
 
     componentDidMount() {
-        // this.addModule('123', 4);
-        // this.switchModule('123');
+        /**
+         * For iOS startup
+         */
         const subscription = this.manager.onStateChange((state) => {
             if (state === 'PoweredOn') {
-                // this.scanAndConnect();
                 subscription.remove();
             }
         }, true);
@@ -75,7 +76,7 @@ export default class Main extends Component {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
         let onInterval = true;
-        let intervalId = setInterval(() => {
+        let intervalId = BackgroundTimer.setInterval(() => {
             if (onInterval) {
                 this.relayOff(relayNum, module);
                 onInterval = false;
@@ -95,7 +96,7 @@ export default class Main extends Component {
     stopTimer(relayNum, module) {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
-        clearInterval(relay.timeoutId);
+        BackgroundTimer.clearInterval(relay.timeoutId);
         relays[relayNum - 1] = {
             ...relay[relayNum - 1],
             timeoutId: '',
