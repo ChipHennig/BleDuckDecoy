@@ -20,12 +20,6 @@ export default class Main extends Component {
         this.state = {
             modules: new Map(),
             currentModule: '',
-            intervalStart: (callback, interval) => {
-                BackgroundTimer.setInterval(callback, interval);
-            },
-            intervalEnd: (callback, interval) => {
-                BackgroundTimer.clearInterval(callback, interval);
-            },
         };
         this.startTimer = this.startTimer.bind(this);
         this.stopTimer = this.stopTimer.bind(this);
@@ -43,14 +37,6 @@ export default class Main extends Component {
                 }
             }, true);
             BackgroundTimer.start();
-            this.setState({
-                intervalStart: (callback, interval) => {
-                    setInterval(callback, interval);
-                },
-                intervalEnd: (callback, interval) => {
-                    clearInterval(callback, interval);
-                },
-            });
         }
     }
 
@@ -100,7 +86,14 @@ export default class Main extends Component {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
         let onInterval = true;
-        let intervalId = this.state.intervalStart(() => {
+        const startInterval = (callback, interval) => {
+            if (Platform.OS === 'ios') {
+                return setInterval(callback, interval);
+            } else {
+                return BackgroundTimer.setInterval(callback, interval);
+            }
+        };
+        let intervalId = startInterval(() => {
             if (onInterval) {
                 this.relayOff(relayNum, module);
                 onInterval = false;
@@ -120,7 +113,11 @@ export default class Main extends Component {
     stopTimer(relayNum, module) {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
-        this.state.intervalEnd(relay.timeoutId);
+        if (Platform.OS === 'ios') {
+            clearInterval(relay.timeoutId);
+        } else {
+            BackgroundTimer.clearInterval(relay.timeoutId);
+        }
         relays[relayNum - 1] = {
             ...relay[relayNum - 1],
             timeoutId: '',
