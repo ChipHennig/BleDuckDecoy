@@ -22,6 +22,8 @@ export default class Main extends Component {
         this.state = {
             modules: new Map(),
             currentModule: '',
+            showConnectModal: false,
+            numDucks: '4',
         };
         this.startTimer = this.startTimer.bind(this);
         this.stopTimer = this.stopTimer.bind(this);
@@ -50,6 +52,14 @@ export default class Main extends Component {
         // this.manager.devices().forEach((device) => {
         //     device.cancelConnection();
         // });
+    }
+
+    setNumDucks(num) {
+        this.setState({numDucks: num});
+    }
+
+    toggleModal() {
+        this.setState({showConnectModal: !this.state.showConnectModal});
     }
 
     addModule(deviceId, numRelays) {
@@ -181,7 +191,8 @@ export default class Main extends Component {
                             return d.discoverAllServicesAndCharacteristics();
                         })
                         .then((d) => {
-                            this.addModule(d.id, 4);
+                            this.toggleModal();
+                            this.addModule(d.id, parseInt(this.state.numDucks));
                             this.switchModule(d.id);
                             //return this.writeHex(d, 'A00100A1');
                         })
@@ -272,21 +283,20 @@ export default class Main extends Component {
 
         return (
             <View style={styles.container}>
-                <Modal isVisible={true}>
+                <Modal isVisible={this.state.showConnectModal}>
                     <View style={styles.modalCard}>
                         <Text style={styles.paragraph}>Number of ducks?</Text>
                         <View style={styles.modPicker}>
                             <SegmentedControls
                                 style={{alignSelf: 'center'}}
                                 options={['1', '4']}
-                                // onSelection={}
-                                selectedOption={'1'}
+                                onSelection={this.setNumDucks.bind(this)}
+                                selectedOption={this.state.numDucks}
                             />
                         </View>
                         <TouchableOpacity
                             style={styles.okBtn}
-                            // onPress={}
-                        >
+                            onPress={() => this.toggleModal()}>
                             <Text style={styles.okText}>OK</Text>
                         </TouchableOpacity>
                     </View>
