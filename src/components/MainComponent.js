@@ -31,8 +31,9 @@ export default class Main extends Component {
     }
 
     componentDidMount() {
-        this.addModule('123', 4);
-        this.switchModule('123');
+        // Test
+        // this.addModule('123', 4);
+        // this.switchModule('123');
         /**
          * For iOS startup
          */
@@ -62,6 +63,11 @@ export default class Main extends Component {
         this.setState({showConnectModal: !this.state.showConnectModal});
     }
 
+    connectModalSubmit() {
+        this.addModule(this.state.currentModule, parseInt(this.state.numDucks));
+        this.toggleModal();
+    }
+
     addModule(deviceId, numRelays) {
         let relays = [];
         for (let i = 0; i < numRelays; i++) {
@@ -84,9 +90,10 @@ export default class Main extends Component {
     }
 
     switchModule(deviceId) {
-        if (this.state.modules.has(deviceId)) {
-            this.setState({currentModule: deviceId});
-        }
+        // if (this.state.modules.has(deviceId)) {
+        //     this.setState({currentModule: deviceId});
+        // }
+        this.setState({currentModule: deviceId});
     }
 
     updateRelays(relays, module) {
@@ -192,9 +199,7 @@ export default class Main extends Component {
                         })
                         .then((d) => {
                             this.toggleModal();
-                            this.addModule(d.id, parseInt(this.state.numDucks));
                             this.switchModule(d.id);
-                            //return this.writeHex(d, 'A00100A1');
                         })
                         .then(() => {
                             // this.info('Listening...');
@@ -212,7 +217,7 @@ export default class Main extends Component {
 
     render() {
         let buttons = () => {
-            if (this.state.currentModule.length > 0) {
+            if (this.state.modules.has(this.state.currentModule)) {
                 let btns = this.state.modules
                     .get(this.state.currentModule)
                     .map((relay, index) => {
@@ -239,7 +244,7 @@ export default class Main extends Component {
         };
 
         let modulePicker = () => {
-            if (this.state.modules.size > 0) {
+            if (this.state.modules.has(this.state.currentModule)) {
                 let mods = [...this.state.modules.keys()].map((id, index) => {
                     return (
                         <Picker.Item
@@ -296,7 +301,7 @@ export default class Main extends Component {
                         </View>
                         <TouchableOpacity
                             style={styles.okBtn}
-                            onPress={() => this.toggleModal()}>
+                            onPress={() => this.connectModalSubmit()}>
                             <Text style={styles.okText}>OK</Text>
                         </TouchableOpacity>
                     </View>
@@ -341,6 +346,7 @@ const styles = StyleSheet.create({
     okBtn: {
         alignSelf: 'center',
         alignItems: 'center',
+        padding: 30
     },
     okText: {
         color: 'blue',
