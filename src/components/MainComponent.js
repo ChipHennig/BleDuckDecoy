@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
     View,
     Text,
@@ -7,12 +7,13 @@ import {
     TouchableOpacity,
     Platform,
 } from 'react-native';
-import {Picker} from '@react-native-community/picker';
+import { Picker } from '@react-native-community/picker';
 import Modal from 'react-native-modal';
-import {SegmentedControls} from 'react-native-radio-buttons';
-import {BleManager} from 'react-native-ble-plx';
-import {Buffer} from 'buffer';
+import { SegmentedControls } from 'react-native-radio-buttons';
+import { BleManager } from 'react-native-ble-plx';
+import { Buffer } from 'buffer';
 import BackgroundTimer from 'react-native-background-timer';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import PowerButton from './PowerButtonComponent';
 
 export default class Main extends Component {
@@ -56,11 +57,11 @@ export default class Main extends Component {
     }
 
     setNumDucks(num) {
-        this.setState({numDucks: num});
+        this.setState({ numDucks: num });
     }
 
     toggleModal() {
-        this.setState({showConnectModal: !this.state.showConnectModal});
+        this.setState({ showConnectModal: !this.state.showConnectModal });
     }
 
     connectModalSubmit() {
@@ -80,7 +81,7 @@ export default class Main extends Component {
         }
         let modules = this.state.modules;
         modules = modules.set(deviceId, relays);
-        this.setState({modules: modules});
+        this.setState({ modules: modules });
     }
 
     removeModule(deviceId) {
@@ -93,13 +94,13 @@ export default class Main extends Component {
         // if (this.state.modules.has(deviceId)) {
         //     this.setState({currentModule: deviceId});
         // }
-        this.setState({currentModule: deviceId});
+        this.setState({ currentModule: deviceId });
     }
 
     updateRelays(relays, module) {
         let modules = this.state.modules;
         modules.set(module, relays);
-        this.setState({modules: modules});
+        this.setState({ modules: modules });
     }
 
     startTimer(relayNum, module) {
@@ -161,7 +162,7 @@ export default class Main extends Component {
     relayOn(relayNum, module) {
         let code = 'A00' + relayNum + '01A' + (relayNum + 1);
         let relays = [...this.state.modules.get(module)];
-        relays[relayNum - 1] = {...relays[relayNum - 1], isOn: true};
+        relays[relayNum - 1] = { ...relays[relayNum - 1], isOn: true };
         this.updateRelays(relays, module);
         this.writeHex(code, module);
     }
@@ -169,7 +170,7 @@ export default class Main extends Component {
     relayOff(relayNum, module) {
         let code = 'A00' + relayNum + '00A' + relayNum;
         let relays = [...this.state.modules.get(module)];
-        relays[relayNum - 1] = {...relays[relayNum - 1], isOn: false};
+        relays[relayNum - 1] = { ...relays[relayNum - 1], isOn: false };
         this.updateRelays(relays, module);
         this.writeHex(code, module);
     }
@@ -291,9 +292,8 @@ export default class Main extends Component {
                 <Modal isVisible={this.state.showConnectModal}>
                     <View style={styles.modalCard}>
                         <Text style={styles.paragraph}>Number of ducks?</Text>
-                        <View style={styles.modPicker}>
+                        <View style={{ alignSelf: 'center', width: wp('50%') }}>
                             <SegmentedControls
-                                style={{alignSelf: 'center'}}
                                 options={['1', '4']}
                                 onSelection={this.setNumDucks.bind(this)}
                                 selectedOption={this.state.numDucks}
@@ -307,20 +307,22 @@ export default class Main extends Component {
                     </View>
                 </Modal>
 
-                <Text style={styles.paragraph}>Duck Decoys</Text>
+                <View style={styles.header}>
+                    <Text style={styles.paragraph}>Duck Decoys</Text>
 
-                <TouchableOpacity
-                    style={styles.connect}
-                    onPress={() => this.scanAndConnect()}>
-                    <Text style={styles.connectText}>Connect</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.connect}
+                        onPress={() => this.scanAndConnect()}>
+                        <Text style={styles.connectText}>Connect</Text>
+                    </TouchableOpacity>
 
-                {modulePicker()}
+                    {modulePicker()}
 
-                <Image
-                    style={styles.image}
-                    source={require('../../assets/duck_pic.png')}
-                />
+                    <Image
+                        style={styles.image}
+                        source={require('../../assets/duck_pic.png')}
+                    />
+                </View>
 
                 {buttons()}
             </View>
@@ -332,12 +334,17 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignContent: 'center',
+        justifyContent: 'flex-start',
         backgroundColor: '#ecf0f1',
-        padding: 8,
+    },
+    header: {
+        flex: 1,
+        height: hp('20%'),
+        justifyContent: 'flex-start'
     },
     modalCard: {
-        height: 200,
-        width: 300,
+        height: hp('40%'),
+        width: wp('70%'),
         alignSelf: 'center',
         alignContent: 'center',
         justifyContent: 'space-evenly',
@@ -358,7 +365,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#0080ff',
         padding: 20,
-        margin: 15,
     },
     connectText: {
         color: 'white',
