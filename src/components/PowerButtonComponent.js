@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {Text, View, TouchableOpacity, StyleSheet} from 'react-native';
+import React, { Component } from 'react';
+import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import Slider from '@react-native-community/slider';
 
 export default class PowerButton extends Component {
@@ -12,19 +12,20 @@ export default class PowerButton extends Component {
             if (!this.props.isOn) {
                 return (
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            style={styles.onButton}
-                            onPress={() =>
-                                this.props.handleOn(
-                                    this.props.num,
-                                    this.props.module,
-                                )
-                            }>
-                            <Text style={styles.text}>On </Text>
-                        </TouchableOpacity>
-                        <View>
+                        <View style={styles.leftItem}>
+                            <TouchableOpacity
+                                style={styles.onButton}
+                                onPress={() =>
+                                    this.props.handleOn(
+                                        this.props.num,
+                                        this.props.module,
+                                    )
+                                }>
+                                <Text style={styles.text}>On </Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.sliderItem}>
                             <Slider
-                                style={styles.rightItem}
                                 value={this.props.timeInterval}
                                 step={1}
                                 minimumValue={3}
@@ -36,69 +37,90 @@ export default class PowerButton extends Component {
                                     )
                                 }
                             />
-                            <Text style={styles.time}>
+                            <Text style={styles.timeTe}>
                                 {this.props.timeInterval} sec
-                            </Text>
+                                </Text>
+                        </View>
+                        <View style={styles.sliderItem}>
+                            <Slider
+                                value={this.props.timeInterval}
+                                step={1}
+                                minimumValue={3}
+                                maximumValue={10}
+                                onValueChange={(value) =>
+                                    this.props.setRelayInterval(
+                                        this.props.num,
+                                        value,
+                                    )
+                                }
+                            />
+                            <Text style={styles.timeTe}>
+                                {this.props.timeInterval} sec
+                                </Text>
                         </View>
                     </View>
                 );
             } else {
                 return (
                     <View style={styles.buttonContainer}>
-                        <TouchableOpacity
-                            style={styles.offButton}
-                            onPress={() =>
-                                this.props.handleOff(
-                                    this.props.num,
-                                    this.props.module,
-                                )
-                            }>
-                            <Text style={styles.text}>Off</Text>
-                        </TouchableOpacity>
-                        <Text style={styles.rightItem}>RUNNING</Text>
+                        <View style={styles.leftItem}>
+                            <TouchableOpacity
+                                style={styles.offButton}
+                                onPress={() =>
+                                    this.props.handleOff(
+                                        this.props.num,
+                                        this.props.module,
+                                    )
+                                }>
+                                <Text style={styles.text}>Off</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.rightItem}>
+                            <Text style={styles.text}>RUNNING</Text>
+                        </View>
                     </View>
                 );
             }
         };
 
-        return (
-            <View>
-                <Text style={styles.text}>Duck {this.props.num} Timer</Text>
-                {button()}
-            </View>
-        );
+        return button();
     }
 }
 
 const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
+        alignContent: 'center',
+        padding: 20
+    },
+    leftItem: {
+        flex: 1,
+        alignContent: 'center'
+    },
+    sliderItem: {
+        flex: 1,
+        paddingRight: 20
+    },
+    rightItem: {
+        flex: 2,
+        paddingLeft: 40
     },
     onButton: {
-        alignSelf: 'flex-start',
-        alignItems: 'center',
+        alignSelf: 'center',
         backgroundColor: '#00ff00',
         padding: 20,
     },
     offButton: {
-        alignItems: 'center',
+        alignSelf: 'center',
         backgroundColor: '#ff0000',
         padding: 20,
-    },
-    rightItem: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        width: 200,
     },
     text: {
         fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
     },
-    time: {
+    timeText: {
         fontSize: 14,
         fontWeight: 'bold',
         textAlign: 'center',

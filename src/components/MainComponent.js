@@ -33,8 +33,8 @@ export default class Main extends Component {
 
     componentDidMount() {
         // Test
-        // this.addModule('123', 4);
-        // this.switchModule('123');
+        this.addModule('123', 4);
+        this.switchModule('123');
         /**
          * For iOS startup
          */
@@ -275,7 +275,6 @@ export default class Main extends Component {
                 return (
                     <Picker
                         selectedValue={this.state.currentModule}
-                        style={styles.modPicker}
                         onValueChange={(itemValue, itemIndex) =>
                             this.switchModule(itemValue)
                         }>
@@ -288,11 +287,11 @@ export default class Main extends Component {
         };
 
         return (
-            <View style={styles.container}>
+            <View style={styles.pageView}>
                 <Modal isVisible={this.state.showConnectModal}>
-                    <View style={styles.modalCard}>
-                        <Text style={styles.paragraph}>Number of ducks?</Text>
-                        <View style={{ alignSelf: 'center', width: wp('50%') }}>
+                    <View>
+                        <Text>Number of ducks?</Text>
+                        <View>
                             <SegmentedControls
                                 options={['1', '4']}
                                 onSelection={this.setNumDucks.bind(this)}
@@ -300,85 +299,51 @@ export default class Main extends Component {
                             />
                         </View>
                         <TouchableOpacity
-                            style={styles.okBtn}
+                            style={styles.button}
                             onPress={() => this.connectModalSubmit()}>
-                            <Text style={styles.okText}>OK</Text>
+                            <Text>OK</Text>
                         </TouchableOpacity>
                     </View>
                 </Modal>
-
                 <View style={styles.header}>
-                    <Text style={styles.paragraph}>Duck Decoys</Text>
-
                     <TouchableOpacity
-                        style={styles.connect}
                         onPress={() => this.scanAndConnect()}>
-                        <Text style={styles.connectText}>Connect</Text>
+                        <Text style={styles.mediumText}>Connect</Text>
                     </TouchableOpacity>
-
-                    {modulePicker()}
-
-                    <Image
+                    {/* <Image
                         style={styles.image}
                         source={require('../../assets/duck_pic.png')}
-                    />
+                    /> */}
+                    {modulePicker()}
                 </View>
 
-                {buttons()}
+                <View style={styles.body}>
+                    {buttons()}
+                </View>
             </View>
         );
     }
 }
 
 const styles = StyleSheet.create({
-    container: {
+    pageView: {
         flex: 1,
         alignContent: 'center',
-        justifyContent: 'flex-start',
         backgroundColor: '#ecf0f1',
     },
     header: {
         flex: 1,
-        height: hp('20%'),
-        justifyContent: 'flex-start'
+        justifyContent: 'center',
     },
-    modalCard: {
-        height: hp('40%'),
-        width: wp('70%'),
-        alignSelf: 'center',
-        alignContent: 'center',
-        justifyContent: 'space-evenly',
-        backgroundColor: '#ecf0f1',
+    body: {
+        flex: 2
     },
-    okBtn: {
+    button: {
         alignSelf: 'center',
         alignItems: 'center',
-        padding: 30
+        padding: 20
     },
-    okText: {
-        color: 'blue',
-        fontWeight: 'bold',
-        fontSize: 18,
-    },
-    connect: {
-        alignSelf: 'center',
-        alignItems: 'center',
-        backgroundColor: '#0080ff',
-        padding: 20,
-    },
-    connectText: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 18,
-    },
-    modPicker: {
-        alignSelf: 'center',
-        height: 20,
-        width: 165,
-        marginBottom: 10,
-    },
-    paragraph: {
-        marginTop: 10,
+    mediumText: {
         fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'center',
