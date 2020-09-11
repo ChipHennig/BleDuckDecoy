@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
 import Slider from '@react-native-community/slider';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 export default class PowerButton extends Component {
     constructor(props) {
@@ -26,36 +27,36 @@ export default class PowerButton extends Component {
                         </View>
                         <View style={styles.sliderItem}>
                             <Slider
-                                value={this.props.timeInterval}
+                                value={this.props.runTime}
                                 step={1}
                                 minimumValue={3}
                                 maximumValue={10}
                                 onValueChange={(value) =>
-                                    this.props.setRelayInterval(
+                                    this.props.setRelayRuntime(
                                         this.props.num,
                                         value,
                                     )
                                 }
                             />
-                            <Text style={styles.timeTe}>
-                                {this.props.timeInterval} sec
+                            <Text style={styles.timeText}>
+                                {this.props.runTime} sec
                                 </Text>
                         </View>
                         <View style={styles.sliderItem}>
                             <Slider
-                                value={this.props.timeInterval}
+                                value={this.props.offDelay}
                                 step={1}
                                 minimumValue={3}
                                 maximumValue={10}
                                 onValueChange={(value) =>
-                                    this.props.setRelayInterval(
+                                    this.props.setRelayOffdelay(
                                         this.props.num,
                                         value,
                                     )
                                 }
                             />
-                            <Text style={styles.timeTe}>
-                                {this.props.timeInterval} sec
+                            <Text style={styles.timeText}>
+                                {this.props.offDelay} sec
                                 </Text>
                         </View>
                     </View>
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'row',
         alignContent: 'center',
-        padding: 20
+        paddingBottom: hp('5%')
     },
     leftItem: {
         flex: 1,

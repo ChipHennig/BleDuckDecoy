@@ -26,15 +26,16 @@ export default class Main extends Component {
             showConnectModal: false,
             numDucks: '4',
         };
-        this.startTimer = this.startTimer.bind(this);
+        this.timerInterval = this.timerInterval.bind(this);
         this.stopTimer = this.stopTimer.bind(this);
-        this.setRelayInterval = this.setRelayInterval.bind(this);
+        this.setRelayRuntime = this.setRelayRuntime.bind(this);
+        this.setRelayOffdelay = this.setRelayOffdelay.bind(this);
     }
 
     componentDidMount() {
         // Test
-        this.addModule('123', 4);
-        this.switchModule('123');
+        // this.addModule('123', 4);
+        // this.switchModule('123');
         /**
          * For iOS startup
          */
@@ -75,7 +76,8 @@ export default class Main extends Component {
             relays.push({
                 timerIsOn: false,
                 isOn: false,
-                timeInterval: 3,
+                runTime: 3,
+                offDelay: 3,
                 timeoutId: '',
             });
         }
@@ -84,11 +86,11 @@ export default class Main extends Component {
         this.setState({ modules: modules });
     }
 
-    removeModule(deviceId) {
-        if (this.state.modules.has(deviceId)) {
-            // TODO
-        }
-    }
+    // removeModule(deviceId) {
+    //     if (this.state.modules.has(deviceId)) {
+    //         // TODO
+    //     }
+    // }
 
     switchModule(deviceId) {
         // if (this.state.modules.has(deviceId)) {
@@ -103,31 +105,30 @@ export default class Main extends Component {
         this.setState({ modules: modules });
     }
 
-    startTimer(relayNum, module) {
-        this.relayOn(relayNum, module);
+    timerInterval(relayNum, module) {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
-        let onInterval = true;
-        const startInterval = (callback, interval) => {
-            if (Platform.OS === 'ios') {
-                return setInterval(callback, interval);
-            } else {
-                return BackgroundTimer.setInterval(callback, interval);
-            }
-        };
-        let intervalId = startInterval(() => {
-            if (onInterval) {
-                this.relayOff(relayNum, module);
-                onInterval = false;
-            } else {
-                this.relayOn(relayNum, module);
-                onInterval = true;
-            }
-        }, relay.timeInterval * 1000);
+        let timeoutId = '';
+        let interval = 0;
+        if (!relay.isOn) {
+            this.relayOn(relayNum, module);
+            interval = relay.runTime;
+        } else {
+            this.relayOff(relayNum, module);
+            interval = relay.offDelay;
+        }
+        if (Platform.OS === 'ios') {
+            timeoutId = setTimeout(this.timerInterval, interval * 1000, relayNum, module);
+        } else {
+            timeoutId = BackgroundTimer.setTimeout(this.timerInterval, interval * 1000, relayNum, module);
+        }
         relays[relayNum - 1] = {
-            ...relays[relayNum - 1],
-            timeoutId: intervalId,
+            ...relay[relayNum - 1],
+            timeoutId: timeoutId,
+            runTime: relay.runTime,
+            offDelay: relay.offDelay,
             timerIsOn: true,
+            isOn: !relay.isOn
         };
         this.updateRelays(relays, module);
     }
@@ -136,25 +137,36 @@ export default class Main extends Component {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
         if (Platform.OS === 'ios') {
-            clearInterval(relay.timeoutId);
+            clearTimeout(relay.timeoutId);
         } else {
-            BackgroundTimer.clearInterval(relay.timeoutId);
+            BackgroundTimer.clearTimeout(relay.timeoutId);
         }
         relays[relayNum - 1] = {
             ...relay[relayNum - 1],
             timeoutId: '',
-            timeInterval: relay.timeInterval,
+            runTime: relay.runTime,
+            offDelay: relay.offDelay,
             timerIsOn: false,
+            isOn: false
         };
         this.updateRelays(relays, module);
         this.relayOff(relayNum, module);
     }
 
-    setRelayInterval(relayNum, interval) {
+    setRelayRuntime(relayNum, interval) {
         let relays = [...this.state.modules.get(this.state.currentModule)];
         relays[relayNum - 1] = {
             ...relays[relayNum - 1],
-            timeInterval: interval,
+            runTime: interval,
+        };
+        this.updateRelays(relays, this.state.currentModule);
+    }
+
+    setRelayOffdelay(relayNum, interval) {
+        let relays = [...this.state.modules.get(this.state.currentModule)];
+        relays[relayNum - 1] = {
+            ...relays[relayNum - 1],
+            offDelay: interval,
         };
         this.updateRelays(relays, this.state.currentModule);
     }
@@ -229,13 +241,16 @@ export default class Main extends Component {
                                 }
                                 module={this.state.currentModule}
                                 num={index + 1}
-                                timeInterval={relay.timeInterval}
+                                runTime={relay.runTime}
+                                offDelay={relay.offDelay}
                                 isOn={relay.timerIsOn}
-                                handleOn={this.startTimer}
+                                handleOn={this.timerInterval}
                                 handleOff={this.stopTimer}
-                                setRelayInterval={
-                                    this.setRelayInterval
-                                }></PowerButton>
+                                setRelayRuntime={
+                                    this.setRelayRuntime
+                                }
+                                setRelayOffdelay={this.setRelayOffdelay}
+                            ></PowerButton>
                         );
                     });
                 return btns;
@@ -274,6 +289,8 @@ export default class Main extends Component {
                 });
                 return (
                     <Picker
+                        style={{ height: hp('15%') }}
+                        itemStyle={{ height: hp('15%') }}
                         selectedValue={this.state.currentModule}
                         onValueChange={(itemValue, itemIndex) =>
                             this.switchModule(itemValue)
@@ -286,11 +303,23 @@ export default class Main extends Component {
             }
         };
 
+        let sliderColumnText = () => {
+            if (this.state.modules.has(this.state.currentModule)) {
+                return (<View style={{ flexDirection: 'row' }}>
+                    <Text style={{ flex: 1 }}></Text>
+                    <Text style={[styles.mediumText, { flex: 1, paddingRight: 20 }]}>Run-time</Text>
+                    <Text style={[styles.mediumText, { flex: 1, paddingRight: 20 }]}>Off-delay</Text>
+                </View>);
+            } else {
+                return <View />;
+            }
+        }
+
         return (
             <View style={styles.pageView}>
                 <Modal isVisible={this.state.showConnectModal}>
                     <View>
-                        <Text>Number of ducks?</Text>
+                        <Text style={styles.mediumText}>Number of ducks?</Text>
                         <View>
                             <SegmentedControls
                                 options={['1', '4']}
@@ -301,14 +330,15 @@ export default class Main extends Component {
                         <TouchableOpacity
                             style={styles.button}
                             onPress={() => this.connectModalSubmit()}>
-                            <Text>OK</Text>
+                            <Text style={[styles.mediumText, { color: 'blue' }]}>OK</Text>
                         </TouchableOpacity>
                     </View>
                 </Modal>
                 <View style={styles.header}>
                     <TouchableOpacity
+                        style={[styles.button, { backgroundColor: 'blue' }]}
                         onPress={() => this.scanAndConnect()}>
-                        <Text style={styles.mediumText}>Connect</Text>
+                        <Text style={[styles.mediumText, { color: 'white' }]}>Connect</Text>
                     </TouchableOpacity>
                     {/* <Image
                         style={styles.image}
@@ -318,6 +348,7 @@ export default class Main extends Component {
                 </View>
 
                 <View style={styles.body}>
+                    {sliderColumnText()}
                     {buttons()}
                 </View>
             </View>
@@ -328,8 +359,8 @@ export default class Main extends Component {
 const styles = StyleSheet.create({
     pageView: {
         flex: 1,
-        alignContent: 'center',
         backgroundColor: '#ecf0f1',
+        justifyContent: 'center',
     },
     header: {
         flex: 1,
@@ -339,9 +370,8 @@ const styles = StyleSheet.create({
         flex: 2
     },
     button: {
-        alignSelf: 'center',
-        alignItems: 'center',
-        padding: 20
+        padding: 20,
+        alignSelf: 'center'
     },
     mediumText: {
         fontSize: 18,
