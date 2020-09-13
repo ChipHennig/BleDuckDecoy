@@ -105,6 +105,16 @@ export default class Main extends Component {
         this.setState({ modules: modules });
     }
 
+    turnOffAllRelays() {
+        this.state.modules.forEach((relays, module) => {
+            relays.forEach((relay, idx) => {
+                if (relay.timerIsOn) {
+                    this.stopTimer(idx + 1, module)
+                }
+            });
+        })
+    }
+
     timerInterval(relayNum, module) {
         let relays = [...this.state.modules.get(module)];
         let relay = relays[relayNum - 1];
@@ -120,7 +130,7 @@ export default class Main extends Component {
         if (Platform.OS === 'ios') {
             timeoutId = setTimeout(this.timerInterval, interval * 1000, relayNum, module);
         } else {
-            timeoutId = BackgroundTimer.setTimeout(this.timerInterval, interval * 1000, relayNum, module);
+            timeoutId = BackgroundTimer.setTimeout(() => {this.timerInterval(relayNum, module)}, interval * 1000);
         }
         relays[relayNum - 1] = {
             ...relay[relayNum - 1],
@@ -315,6 +325,21 @@ export default class Main extends Component {
             }
         }
 
+        let killButton = () => {
+            if (this.state.modules.has(this.state.currentModule)) {
+                return (<TouchableOpacity
+                    style={[styles.button, {
+                        backgroundColor: 'red', borderRadius: 35, height: 70, width: 70,
+                        justifyContent: 'center', marginRight: 30, padding: 20
+                    }]}
+                    onPress={() => this.turnOffAllRelays()}>
+                    <Text style={[styles.mediumText, { color: 'white' }]}>Kill</Text>
+                </TouchableOpacity>);
+            } else {
+                return <View />;
+            }
+        }
+
         return (
             <View style={styles.pageView}>
                 <Modal isVisible={this.state.showConnectModal}>
@@ -335,11 +360,14 @@ export default class Main extends Component {
                     </View>
                 </Modal>
                 <View style={styles.header}>
-                    <TouchableOpacity
-                        style={[styles.button, { backgroundColor: 'blue' }]}
-                        onPress={() => this.scanAndConnect()}>
-                        <Text style={[styles.mediumText, { color: 'white' }]}>Connect</Text>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                        {killButton()}
+                        <TouchableOpacity
+                            style={[styles.button, { backgroundColor: 'blue', }]}
+                            onPress={() => this.scanAndConnect()}>
+                            <Text style={[styles.mediumText, { color: 'white' }]}>Connect</Text>
+                        </TouchableOpacity>
+                    </View>
                     {/* <Image
                         style={styles.image}
                         source={require('../../assets/duck_pic.png')}
