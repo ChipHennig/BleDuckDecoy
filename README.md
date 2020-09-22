@@ -4,6 +4,8 @@ A mobile-controller for (currently [DSD Tech](https://www.amazon.com/DSD-TECH-Ch
 
 module = BLE board
 
+![Current UI](/docs/ui_9-22-2020.PNG)
+
 Current features:
 - Connect button: Connects to any # of DSD BLE boards
   - Modal: select if module has 1 or 4 relays
