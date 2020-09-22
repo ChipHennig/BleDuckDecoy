@@ -1,6 +1,6 @@
 # BleDuckDecoy
 
-A mobile-controller for (currently [DSD Tech](https://www.amazon.com/DSD-TECH-Channels-Bluetooth-Compatible/dp/B07GFH5J96)) Bluetooth-Low-Energy relay boards.
+A ReactNative mobile-controller for (currently [DSD Tech](https://www.amazon.com/DSD-TECH-Channels-Bluetooth-Compatible/dp/B07GFH5J96)) Bluetooth-Low-Energy relay boards.
 
 module = BLE board
 
