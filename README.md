@@ -4,7 +4,7 @@ A mobile-controller for (currently [DSD Tech](https://www.amazon.com/DSD-TECH-Ch
 
 module = BLE board
 
-![Current UI](/docs/ui_9-22-2020.PNG)
+<img alt="current UI" src="/docs/ui_9-22-2020.PNG" height="50%" width="50%" />
 
 Current features:
 - Connect button: Connects to any # of DSD BLE boards
