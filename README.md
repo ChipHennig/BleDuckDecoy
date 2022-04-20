@@ -4,7 +4,7 @@
 
 A ReactNative mobile-controller for (currently [DSD Tech](https://www.amazon.com/DSD-TECH-Channels-Bluetooth-Compatible/dp/B07GFH5J96)) Bluetooth-Low-Energy relay boards.
 
-[![without ducks](https://i.ytimg.com/vi/qTHZV5_ZGac/maxresdefault.jpg)](https://www.youtube.com/watch?v=qTHZV5_ZGac&ab_channel=ChristianHennig)
+[![without ducks](https://i.ytimg.com/vi/qTHZV5_ZGac/mqdefault.jpg)](https://www.youtube.com/watch?v=qTHZV5_ZGac&ab_channel=ChristianHennig)
 
 module = BLE board
 
