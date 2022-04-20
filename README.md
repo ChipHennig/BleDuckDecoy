@@ -1,6 +1,6 @@
 # BleDuckDecoy
 
-[![with ducks](https://i.ytimg.com/vi/PbkUY18GvL4/sddefault.jpg)](https://www.youtube.com/watch?v=PbkUY18GvL4&ab_channel=ChristianHennig)
+[![with ducks](https://i.ytimg.com/vi/PbkUY18GvL4/lqdefault.jpg)](https://www.youtube.com/watch?v=PbkUY18GvL4&ab_channel=ChristianHennig)
 
 A ReactNative mobile-controller for (currently [DSD Tech](https://www.amazon.com/DSD-TECH-Channels-Bluetooth-Compatible/dp/B07GFH5J96)) Bluetooth-Low-Energy relay boards.
 
