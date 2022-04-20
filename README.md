@@ -1,6 +1,10 @@
 # BleDuckDecoy
 
+![with ducks](https://drive.google.com/file/d/1cwuehhOpg844pf_Yxy4wtlVq4IMsPz9i/view?usp=sharing)
+
 A ReactNative mobile-controller for (currently [DSD Tech](https://www.amazon.com/DSD-TECH-Channels-Bluetooth-Compatible/dp/B07GFH5J96)) Bluetooth-Low-Energy relay boards.
+
+![without ducks](https://drive.google.com/file/d/1DxSa0laPHdmBH00vBfoLU8mkYI9TtvU9/view?usp=sharing)
 
 module = BLE board
 
